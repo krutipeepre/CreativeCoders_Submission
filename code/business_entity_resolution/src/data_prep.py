@@ -2,42 +2,37 @@ import pandas as pd
 import os
 
 def load_and_preprocess(file_path):
-    """
-    Loads TSV data and performs basic text normalization.
-    """
-    # Strict requirement: Read with tab separator as addresses contain commas
     df = pd.read_csv(file_path, sep="\t")
-    
-    # Fill missing values and convert text to lowercase for uniform matching
     cols_to_normalize = ['business_name', 'business_address', 'country']
     for col in cols_to_normalize:
         if col in df.columns:
             df[col] = df[col].fillna('').astype(str).str.lower().str.strip()
-            
     return df
 
 def main():
-    # Path updated to point to the cleaned root 'dataset' folder
-    DATA_DIR = "../../../dataset/train/"
+    # 1. Exact script ki location nikalo
+    script_dir = os.path.dirname(os.path.abspath(__file__))
     
-    print("Loading datasets...")
+    # 2. Project ke root folder tak jao
+    root_dir = os.path.abspath(os.path.join(script_dir, "../../.."))
     
-    # Load all three sources
+    # 3. Clean structure wala path try karo
+    DATA_DIR = os.path.join(root_dir, "dataset", "train")
+    
+    # 4. Agar folders theek se move nahi hue the, toh purana path try karo
+    if not os.path.exists(DATA_DIR):
+        DATA_DIR = os.path.join(root_dir, "DataSet", "student_resource", "dataset", "train")
+        
+    print(f"Loading data from: {DATA_DIR}")
+    
     s1_train = load_and_preprocess(os.path.join(DATA_DIR, "train_source1.tsv"))
     s2_train = load_and_preprocess(os.path.join(DATA_DIR, "train_source2.tsv"))
     s3_train = load_and_preprocess(os.path.join(DATA_DIR, "train_source3.tsv"))
     
-    # Load ground truth (no need for text normalization here)
-    ground_truth = pd.read_csv(os.path.join(DATA_DIR, "train_ground_truth.tsv"), sep="\t")
-    
-    print("Data loaded successfully!\n")
+    print("\nData loaded successfully!")
     print(f"Source 1 Shape: {s1_train.shape}")
-    print(f"Source 2 Shape: {s2_train.shape}")
-    print(f"Source 3 Shape: {s3_train.shape}")
-    print(f"Ground Truth Shape: {ground_truth.shape}")
-    
     print("\nSample Data from Source 1:")
-    print(s1_train.head(3))
+    print(s1_train.head(2))
 
 if __name__ == "__main__":
     main()
