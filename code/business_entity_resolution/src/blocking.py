@@ -4,7 +4,12 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.neighbors import NearestNeighbors
 
 def load_and_preprocess(file_path):
-    df = pd.read_csv(file_path, sep="\t")
+    """
+    Loads TSV data. Uses nrows=1000 for testing to prevent RAM crashes.
+    """
+    # Sirf pehli 1000 lines read karega
+    df = pd.read_csv(file_path, sep="\t", nrows=1000)
+    
     cols = ['business_name', 'business_address', 'country']
     for col in cols:
         if col in df.columns:
@@ -40,7 +45,7 @@ def main():
     OUTPUT_DIR = os.path.join(root_dir, "output")
     os.makedirs(OUTPUT_DIR, exist_ok=True)
     
-    print("Loading data for blocking...")
+    print("Loading a 1000-row sample for blocking...")
     s1 = load_and_preprocess(os.path.join(DATA_DIR, "train_source1.tsv"))
     s2 = load_and_preprocess(os.path.join(DATA_DIR, "train_source2.tsv"))
     s3 = load_and_preprocess(os.path.join(DATA_DIR, "train_source3.tsv"))
@@ -71,7 +76,6 @@ def main():
     cand_df.to_csv(cand_path, sep="\t", index=False)
     
     print(f"\nSuccess! Candidate pairs saved to: {cand_path}")
-    print(cand_df.head())
 
 if __name__ == "__main__":
     main()

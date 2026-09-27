@@ -19,10 +19,11 @@ def main():
         
     OUTPUT_DIR = os.path.join(root_dir, "output")
     
-    print("Loading data for matching...")
-    # Read the preprocessed datasets to build a lookup dictionary
+    print("Loading data for matching (1000 rows limit)...")
+    
+    # ADDED nrows=1000 HERE TO PREVENT RAM CRASH
     def load_clean(path):
-        df = pd.read_csv(path, sep="\t")
+        df = pd.read_csv(path, sep="\t", nrows=1000)
         df['text'] = df['business_name'].fillna('').str.lower() + " " + df['business_address'].fillna('').str.lower()
         return df.set_index('entity_id')['text'].to_dict()
 
@@ -30,15 +31,12 @@ def main():
     s2_dict = load_clean(os.path.join(DATA_DIR, "train_source2.tsv"))
     s3_dict = load_clean(os.path.join(DATA_DIR, "train_source3.tsv"))
     
-    # Combine S2 and S3 dicts for easy lookup
     cand_dict = {**s2_dict, **s3_dict}
     
     print("Loading candidate pairs...")
     candidates_df = pd.read_csv(os.path.join(OUTPUT_DIR, "candidate_pairs.tsv"), sep="\t")
     
-    # We set a strict threshold to favor precision (important for F_0.5 score)
     SIMILARITY_THRESHOLD = 0.55
-    
     matching_results = []
     
     print("Filtering candidates based on similarity...")
@@ -60,7 +58,6 @@ def main():
             if score >= SIMILARITY_THRESHOLD:
                 final_matches.append(cand_id)
                 
-        # Empty list is handled correctly (singleton)
         matched_str = ",".join(final_matches)
         matching_results.append({'source1_entity_id': s1_id, 'matched_entity_ids': matched_str})
         
@@ -70,7 +67,6 @@ def main():
     final_df.to_csv(output_path, sep="\t", index=False)
     
     print(f"\nSuccess! Final matching results saved to: {output_path}")
-    print(final_df.head())
 
 if __name__ == "__main__":
     main()
